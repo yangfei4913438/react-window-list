@@ -1,20 +1,14 @@
-import { type ReactNode, createContext } from 'react';
+import { createContext } from 'react';
+import Cache from './utils/cache';
+
+type keyList = { id: string }[];
+export interface DataType extends keyList {}
+
+export const createCache = (knownSizes = {}) => new Cache(knownSizes);
 
 export const VirtualTableContext = createContext<{
-  // 展示的数据
-  list: any[];
-  // 顶部固定行数量
-  fixedTopCount: number;
-  // 每行的高度
-  rowHeight: number;
-  // 宽度
-  width: number;
-  // 行渲染方法
-  lineRender: (row: any, index: number) => ReactNode;
+  // 缓存对象
+  cache: Cache;
 }>({
-  list: [],
-  fixedTopCount: 0,
-  rowHeight: 45,
-  width: 0,
-  lineRender: () => undefined,
+  cache: createCache(),
 });

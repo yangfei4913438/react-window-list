@@ -13,8 +13,6 @@ const List: FC<IProps> = () => {
   const [pageSize] = useState(100);
   // 表格数据
   const [list, setList] = useState<IPerson[]>([]);
-  // 分组信息
-  const [groups, setGroups] = useState<{ [key: string]: IPerson[] }>({});
 
   // 获取数据的方式
   const getData = (page_offset: number, page_size: number) => {
@@ -50,28 +48,6 @@ const List: FC<IProps> = () => {
     }
   };
 
-  // 分组响应
-  const handleGroup = (id: string, index: number) => {
-    const data = Array.from(list);
-    if (groups[id]) {
-      data.splice(index + 1, groups[id].length);
-      setGroups((prevState) => {
-        delete prevState[id];
-        return prevState;
-      });
-    } else {
-      const newData = makeData(2).map((o) => {
-        return {
-          ...o,
-          group: true,
-        };
-      });
-      setGroups((prevState) => ({ ...prevState, [id]: newData }));
-      data.splice(index + 1, 0, ...newData);
-    }
-    setList(data);
-  };
-
   useLayoutEffect(() => {
     initData();
   }, []);
@@ -87,16 +63,31 @@ const List: FC<IProps> = () => {
     }
   };
 
+  // 动态生成一组数，用于确定哪些元素单行显示。
+  const arr = Array.from({ length: 5 }, () => Math.floor(Math.random() * 10));
+
   // 所有列的渲染方法
   const lineRender = (row: IPerson, index: number) => {
-    const icon = !row.group && (groups[row.id] ? '⏬' : '⏩');
     return (
-      <div
-        className={cx('flex h-full w-full items-center px-3', !row.group && 'cursor-pointer')}
-        onClick={() => !row.group && handleGroup(row.id, index)}
-      >
-        <span className={cx('truncate', row.group && 'pl-5')}>
-          {icon} {row.name} - {row.age} - {row.status} - {row.city} - {row.phone}
+      <div className={cx('flex h-full w-full items-center px-3')}>
+        <span className={'w-full truncate p-3'}>
+          {arr.includes(index % 10) ? (
+            <div className=" text-red-500">
+              <p>序列: {index}</p>
+              <p>
+                {row.name} - {row.age} - {row.status} - {row.city} - {row.phone}
+              </p>
+            </div>
+          ) : (
+            <div className="w-full text-green-500">
+              <p>序列: {index}</p>
+              <p>姓名：{row.name}</p>
+              <p>年龄：{row.age}</p>
+              <p>状态：{row.status}</p>
+              <p>城市：{row.city}</p>
+              <p>手机: {row.phone}</p>
+            </div>
+          )}
         </span>
       </div>
     );
@@ -104,7 +95,7 @@ const List: FC<IProps> = () => {
 
   // 渲染滚动行（滚动的时候，不显示原始内容，显示这个替代行内容）
   // const scrollingRender = (index: number) => {
-  //   return <div className="w-full">Scrolling {index}</div>;
+  //   return <div className="flex h-full items-center">Scrolling {index}</div>;
   // };
 
   // 空态图
@@ -130,12 +121,11 @@ const List: FC<IProps> = () => {
 
       <div className="flex-1">
         <VirtualList
-          fixedTopCount={2}
-          rowHeight={45}
           list={list}
+          lineRender={lineRender}
           emptyNode={emptyDom}
           nextPage={nextPageData}
-          lineRender={lineRender}
+          nextTrigger={0.6}
           // scrollingRender={scrollingRender}
         />
       </div>

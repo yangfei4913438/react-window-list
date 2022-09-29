@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 import Cache from './utils/cache';
 
-type keyList = { id: string }[];
+type keyList = { id: string | number }[];
 export interface DataType extends keyList {}
 
 export const createCache = (knownSizes = {}) => new Cache(knownSizes);

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, forwardRef } from 'react';
+import { useEffect, useLayoutEffect, forwardRef, useCallback } from 'react';
 import { VariableSizeListProps, VariableSizeList } from 'react-window';
 import debounce from 'lodash/debounce';
 
@@ -47,63 +47,47 @@ const DynamicList = forwardRef<VariableSizeList, DynamicListProps>((props, ref) 
     return measureElement(MeasurementContainer, debug);
   };
 
-  const lazyCacheFill = () => {
+  const lazyCacheFill = useCallback(() => {
     if (!lazyMeasurement) {
       return;
     }
     itemData.forEach(({ id }, index) => {
       setTimeout(() => {
-        if (!cache.values[id]) {
-          cache.values[id] = getMeasure(index);
+        if (!cache.values[String(id)]) {
+          cache.values[String(id)] = getMeasure(index);
         }
       }, 0);
     });
-  };
-
-  const handleListResize = debounce(() => {
-    if (listRef.current) {
-      cache.clearCache();
-      listRef.current.resetAfterIndex(0);
-      lazyCacheFill();
-    }
-  }, 50);
+  }, [lazyMeasurement, itemData, cache]);
 
   useEffect(() => {
     lazyCacheFill();
-    if (listRef.current) {
-      listRef.current._resetAfterIndex = listRef.current.resetAfterIndex;
-    }
     return destroyMeasureLayer;
-  }, []);
+  }, [lazyCacheFill, destroyMeasureLayer]);
 
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.resetAfterIndex = (index: number, shouldForceUpdate = true) => {
+  const handleListResize = useCallback(
+    debounce((shouldForceUpdate: boolean = false) => {
+      if (listRef.current) {
         cache.clearCache();
+        listRef.current.resetAfterIndex(0, shouldForceUpdate);
         lazyCacheFill();
-        listRef.current._resetAfterIndex(index, shouldForceUpdate);
-      };
-    }
-  }, [lazyCacheFill]);
+      }
+    }, 50),
+    [listRef.current, cache, lazyCacheFill]
+  );
 
   // 数据和宽高改变的时候，重新计算dom
   useLayoutEffect(() => {
-    handleListResize();
-  }, [itemData, width, height, rest.useIsScrolling]);
-
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.resetAfterIndex(0);
-    }
-  }, [itemData.length]);
+    handleListResize(true);
+  }, [itemData, width, height, rest.useIsScrolling, handleListResize]);
 
   const itemSize = (index: number) => {
     const { id } = itemData[index];
-    if (cache.values[id]) {
-      return cache.values[id];
+    if (cache.values[String(id)]) {
+      return cache.values[String(id)];
     } else {
-      cache.values[id] = getMeasure(index);
-      return cache.values[id];
+      cache.values[String(id)] = getMeasure(index);
+      return cache.values[String(id)];
     }
   };
 

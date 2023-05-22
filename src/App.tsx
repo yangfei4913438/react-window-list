@@ -2,7 +2,7 @@ import Demo from 'src/components/demo';
 
 const App = () => {
   return (
-    <div className={'mx-8'}>
+    <div className='mx-8'>
       <Demo />
     </div>
   );

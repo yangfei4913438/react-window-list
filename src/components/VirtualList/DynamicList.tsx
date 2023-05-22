@@ -1,11 +1,10 @@
-import { useEffect, useLayoutEffect, forwardRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, forwardRef, useCallback, useContext } from 'react';
 import { VariableSizeListProps, VariableSizeList } from 'react-window';
 import debounce from 'lodash/debounce';
 
 import useShareForwardedRef from './hooks/useShareForwardedRef';
 import measureElement, { destroyMeasureLayer } from './utils/asyncMeasurer';
 import { type DataType, VirtualTableContext } from './consts';
-import { useContext } from 'react';
 
 interface DynamicListProps
   extends Omit<
@@ -36,16 +35,19 @@ const DynamicList = forwardRef<VariableSizeList, DynamicListProps>((props, ref) 
   const { cache } = useContext(VirtualTableContext);
   const listRef = useShareForwardedRef(ref);
 
-  const getMeasure = (index: number) => {
-    const MeasurementContainer = (
-      <div style={{ width, height, overflowY: 'scroll' }}>
-        <div id="item-container" style={{ overflow: 'auto' }}>
-          {children({ index, data: itemData, style })}
+  const getMeasure = useCallback(
+    (index: number) => {
+      const MeasurementContainer = (
+        <div style={{ width, height, overflowY: 'scroll' }}>
+          <div id='item-container' style={{ overflow: 'auto' }}>
+            {children({ index, data: itemData, style })}
+          </div>
         </div>
-      </div>
-    );
-    return measureElement(MeasurementContainer, debug);
-  };
+      );
+      return measureElement(MeasurementContainer, debug);
+    },
+    [children, debug, height, itemData, style, width]
+  );
 
   const lazyCacheFill = useCallback(() => {
     if (!lazyMeasurement) {
@@ -58,23 +60,20 @@ const DynamicList = forwardRef<VariableSizeList, DynamicListProps>((props, ref) 
         }
       }, 0);
     });
-  }, [lazyMeasurement, itemData, cache]);
+  }, [lazyMeasurement, itemData, cache.values, getMeasure]);
 
   useEffect(() => {
     lazyCacheFill();
     return destroyMeasureLayer;
-  }, [lazyCacheFill, destroyMeasureLayer]);
+  }, [lazyCacheFill]);
 
-  const handleListResize = useCallback(
-    debounce((shouldForceUpdate: boolean = false) => {
-      if (listRef.current) {
-        cache.clearCache();
-        listRef.current.resetAfterIndex(0, shouldForceUpdate);
-        lazyCacheFill();
-      }
-    }, 50),
-    [listRef.current, cache, lazyCacheFill]
-  );
+  const handleListResize = debounce((shouldForceUpdate = false) => {
+    if (listRef.current) {
+      cache.clearCache();
+      listRef.current.resetAfterIndex(0, shouldForceUpdate);
+      lazyCacheFill();
+    }
+  }, 50);
 
   // 数据和宽高改变的时候，重新计算dom
   useLayoutEffect(() => {
@@ -85,25 +84,27 @@ const DynamicList = forwardRef<VariableSizeList, DynamicListProps>((props, ref) 
     const { id } = itemData[index];
     if (cache.values[String(id)]) {
       return cache.values[String(id)];
-    } else {
-      cache.values[String(id)] = getMeasure(index);
-      return cache.values[String(id)];
     }
+    cache.values[String(id)] = getMeasure(index);
+    return cache.values[String(id)];
   };
 
   return (
     <VariableSizeList
       {...rest}
-      layout="vertical"
+      layout='vertical'
       ref={listRef}
       itemSize={(idx) => itemSize(idx).height}
       height={height}
       width={width}
       itemCount={itemData.length}
       itemData={itemData}
-      children={children}
-    />
+    >
+      {children}
+    </VariableSizeList>
   );
 });
+
+DynamicList.displayName = 'DynamicList';
 
 export default DynamicList;

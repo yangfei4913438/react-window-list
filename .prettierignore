@@ -1,9 +1,2 @@
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode
-.idea
-.DS_Store
+node_modules/
+.idea/

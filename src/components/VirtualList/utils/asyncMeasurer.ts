@@ -53,8 +53,8 @@ const measureElement = (element: ReactElement, debug: boolean) => {
 
   // Gets the element size
   const child = container.querySelector('#item-container')!;
-  const height = child.getBoundingClientRect().height;
-  const width = child.getBoundingClientRect().width;
+  const { height } = child.getBoundingClientRect();
+  const { width } = child.getBoundingClientRect();
 
   // Removes the element from the document
   if (!debug) {

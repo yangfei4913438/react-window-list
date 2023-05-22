@@ -1,11 +1,9 @@
 import { type FC, useState, useLayoutEffect, useMemo } from 'react';
+import cx from 'classnames';
 import { type IPerson, makeData } from './makeData';
 import { VirtualList } from '../VirtualList';
-import cx from 'classnames';
 
-interface IProps {}
-
-const List: FC<IProps> = () => {
+const List: FC = () => {
   // 表单数据相关
   // 第几页
   const [pageOffset, setPageOffset] = useState(0);
@@ -19,8 +17,8 @@ const List: FC<IProps> = () => {
     // 后台需要的请求参数
     const send: { [key: string]: any } = {
       project_id: 'mock',
-      page_offset: page_offset, // 第几页
-      page_size: page_size, // 每页几条记录
+      page_offset, // 第几页
+      page_size, // 每页几条记录
     };
 
     console.log('请求数据:', send);
@@ -50,6 +48,7 @@ const List: FC<IProps> = () => {
 
   useLayoutEffect(() => {
     initData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 初始化
@@ -70,16 +69,16 @@ const List: FC<IProps> = () => {
   const lineRender = (row: IPerson, index: number) => {
     return (
       <div className={cx('flex h-full w-full items-center px-3')}>
-        <span className={'w-full truncate p-3'}>
+        <span className='w-full truncate p-3'>
           {arr.includes(index % 10) ? (
-            <div className=" text-red-500">
+            <div className=' text-red-500'>
               <p>序列: {index}</p>
               <p>
                 {row.name} - {row.age} - {row.status} - {row.city} - {row.phone}
               </p>
             </div>
           ) : (
-            <div className="w-full text-green-500">
+            <div className='w-full text-green-500'>
               <p>序列: {index}</p>
               <p>姓名：{row.name}</p>
               <p>年龄：{row.age}</p>
@@ -101,7 +100,7 @@ const List: FC<IProps> = () => {
   // 空态图
   const emptyDom = useMemo(
     () => (
-      <div className="flex h-full w-full items-center justify-center bg-[#f6f6f6] text-gray-500">
+      <div className='flex h-full w-full items-center justify-center bg-[#f6f6f6] text-gray-500'>
         Empty Table
       </div>
     ),
@@ -109,17 +108,17 @@ const List: FC<IProps> = () => {
   );
 
   return (
-    <div className="flex h-screen w-full flex-col p-2">
-      <div className="navbar flex justify-between bg-neutral px-8 text-neutral-content">
-        <div className="select-none text-xl">React Window List</div>
-        <div className="gap-2">
-          <a className="btn" onClick={initData}>
+    <div className='flex h-screen w-full flex-col p-2'>
+      <div className='navbar bg-neutral text-neutral-content flex justify-between px-8'>
+        <div className='select-none text-xl'>React Window List</div>
+        <div className='gap-2'>
+          <button type='button' className='btn' onClick={initData}>
             刷新数据
-          </a>
+          </button>
         </div>
       </div>
 
-      <div className="flex-1">
+      <div className='flex-1'>
         <VirtualList
           list={list}
           lineRender={lineRender}

@@ -1,0 +1,6 @@
+node_modules/
+.idea/
+
+# file
+vite.config.ts
+tailwind.config.js

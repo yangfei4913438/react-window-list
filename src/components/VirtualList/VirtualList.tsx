@@ -5,9 +5,9 @@ import {
 } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { type FC, type ReactNode, type CSSProperties, useRef } from 'react';
+import cx from 'classnames';
 import { type DataType, VirtualTableContext, createCache } from './consts';
 import DynamicList from './DynamicList';
-import cx from 'classnames';
 
 export interface VirtualListProps<T extends DataType>
   extends Omit<
@@ -78,8 +78,8 @@ const VirtualList: FC<VirtualListProps<DataType>> = ({
               {...rest}
               ref={dynamicListRef}
               itemData={list}
-              height={height}
-              width={width}
+              height={height as number}
+              width={width as number}
               className={wrapperClass}
               overscanCount={3}
               onItemsRendered={onItemsRendered}
@@ -101,7 +101,7 @@ const VirtualList: FC<VirtualListProps<DataType>> = ({
               }}
             </DynamicList>
             {list.length === 0 && (
-              <div className="absolute bottom-0 left-0 z-50 bg-white" style={{ width, height }}>
+              <div className='absolute bottom-0 left-0 z-50 bg-white' style={{ width, height }}>
                 {emptyNode}
               </div>
             )}

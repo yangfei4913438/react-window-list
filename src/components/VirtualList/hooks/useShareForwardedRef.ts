@@ -10,10 +10,8 @@ const useShareForwardedRef = (forwardedRef: ForwardedRef<VariableSizeList>) => {
     }
     if (typeof forwardedRef === 'function') {
       forwardedRef(innerRef.current);
-    } else {
-      if (forwardedRef.current) {
-        forwardedRef.current = innerRef.current;
-      }
+    } else if (forwardedRef.current) {
+      forwardedRef.current = innerRef.current;
     }
   });
 
